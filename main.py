@@ -1,43 +1,43 @@
 import pandas as pd
 import streamlit as st
-from datetime import date, timedelta
 
 
-current_date = date.today()
+st.title("Dev Log Generator")
 
-# for i in range(5):
-#     current_date -= timedelta(days=1)
-#     dates.append(str(current_date.strftime("%m/%d/%Y")))
-
-# dates.reverse()
-
-# date_keys = ['1','2','3','4','5']
-# date_values = dates
-
-# d = {date_keys[i]:date_values[i] for i in range(len(date_keys))}
+if "data" not in st.session_state:
+    data = pd.DataFrame(
+        {"Date": [], "Start Time": [], "End Time": [], "Time Spent": []}
+    )
+    st.session_state.data = data
 
 
-with open("test.txt", 'w') as f:
-    f.write('This is a new text file!')
-
-df = pd.DataFrame(
-        {"Dates":["2/1/25"],
-        "Start Time":["8:00am"],
-        "End Time":["10:00pm"],
-        "Time Spent":["2 Hours"],
-        "Ticket":["NA"],
-        "Category":["NA"],
-        "Notes":["Notes go here"]
-    }
-)
- 
-
-st.dataframe(df, hide_index=True)
-st.download_button(label="Download Log as .xlsx file",data="test.txt",file_name="downloaded_file.txt")
-
-text = st.text_area("Text Field")
+st.dataframe(st.session_state.data)
 
 
+def add_dfForm():
+    row = pd.DataFrame(
+        {
+            "Date": [st.session_state.input_df_form_col1],
+            "Start Time": [st.session_state.input_df_form_col2],
+            "End Time": [st.session_state.input_df_form_col3],
+            "Time Spent": [
+                #cannot subract these two values because they are time_input
+                st.session_state.input_df_form_col2 - st.session_state.input_df_form_col3
+            ],
+        }
+    )
+    st.session_state.data = pd.concat([st.session_state.data, row])
 
 
-    
+dfForm = st.form(key="dfForm", clear_on_submit=True)
+with dfForm:
+    dfFormColumns = st.columns(4)
+    with dfFormColumns[0]:
+        st.date_input("Date", value= None,key="input_df_form_col1", format="MM/DD/YYYY")
+    with dfFormColumns[1]:
+        st.time_input("Start Time", value=None, key="input_df_form_col2")
+    with dfFormColumns[2]:
+        st.time_input("End Time", value=None, key="input_df_form_col3")
+    with dfFormColumns[3]:
+        pass
+    st.form_submit_button(on_click=add_dfForm)
