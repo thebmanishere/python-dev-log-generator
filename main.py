@@ -1,9 +1,9 @@
+
 import pandas as pd
 import streamlit as st
 
 
 st.title("Dev Log Generator")
-
 
 
 if "data" not in st.session_state:
@@ -13,84 +13,77 @@ if "data" not in st.session_state:
     st.session_state.data = data
 
 
-st.dataframe(st.session_state.data)
+st.dataframe(st.session_state.data, hide_index=True)
 
 
 
 def add_dfForm():
-
+    
+    
+   for r in range(form_rows):
+    
+    date_key = f'input_date_col'+str(r)
+    start_time_key = f'input_start_time_col'+str(r)
+    end_time_key = f'input_end_time_col'+str(r)
+    time_spent_key = f'input_hours_spent_col'+str(r)
+    category_key = f'input_category_col'+str(r)
+    notes_key = f'input_notes_col'+str(r)
+    
+    
     row = pd.DataFrame(
         {
-            #grab the other keys from session state and add to data frame
-            "Date": [st.session_state.input_df_form_col1],
-            "Start Time": [st.session_state.input_df_form_col2],
-            "End Time": [st.session_state.input_df_form_col3],
-            "Time Spent": [st.session_state.input_df_form_col4],
-            "Category":[st.session_state.input_df_form_col5],
-            "Notes":[st.session_state.input_df_form_col6]
-        }
+            "Date": [st.session_state[date_key]],
+            "Start Time": [st.session_state[start_time_key]],
+            "End Time": [st.session_state[end_time_key]],
+            "Time Spent": [st.session_state[time_spent_key]],
+            "Category":[st.session_state[category_key]],
+            "Notes":[st.session_state[notes_key]]
+        },
     )
+
+    
     st.session_state.data = pd.concat([st.session_state.data, row])
     
 
 dfForm = st.form(key="dfForm", clear_on_submit=True)
-  
 
+
+def add_row(row):
+    
+        with form_columns[0]:
+            st.date_input("Date", value= None, key=f'input_date_col{row}', format="MM/DD/YYYY") 
+        
+        with form_columns[1]:
+            st.time_input("Start Time", value=None, key=f'input_start_time_col{row}')
+            
+        with form_columns[2]:
+            st.time_input("End Time", value=None, key=f'input_end_time_col{row}')
+                
+        with form_columns[3]:
+            st.time_input("Hours Spent", value=None, key=f'input_hours_spent_col{row}')
+                
+        with form_columns[4]:
+            st.selectbox("Category", options, key=f'input_category_col{row}', placeholder="Select category")
+                
+        with form_columns[5]:
+            st.text_input("Notes", value=None, key=f'input_notes_col{row}',placeholder="Enter notes here.")
+ 
+        
 with dfForm:
     
-    dfFormColumns = st.columns(6)
+    form_columns = st.columns(6)
+    form_rows = st.slider("Number of rows", min_value=1, max_value=5)
     options = ["N/A", "Web Dev", "Marketing", "User Ticket","Misc."]
+        
     
-    #placeholder keys for the different inputs
-    with dfFormColumns[0]:
-        st.date_input("Date", value= None, key="input_df_form_col1", format="MM/DD/YYYY")
-        st.date_input("Date", value= None, key="date_col2", format="MM/DD/YYYY")
-        st.date_input("Date", value= None, key ="date_col3",format="MM/DD/YYYY")
-        st.date_input("Date", value= None, key="date_col4", format="MM/DD/YYYY")
-        st.date_input("Date", value= None, key ="date_col5",format="MM/DD/YYYY")
-         
-    with dfFormColumns[1]:
-        st.time_input("Start Time", value=None, key="input_df_form_col2")
-        st.time_input("Start Time", value=None, key="start_time_col3")
-        st.time_input("Start Time", value=None, key="start_time_col4")
-        st.time_input("Start Time", value=None, key="start_time_col5")
-        st.time_input("Start Time", value=None, key="start_time_col6")
+    submit_action = st.form_submit_button('Add rows to table')
+    
+    if submit_action:
+        for r in range(form_rows):
+            add_row(r) 
+            
+            
         
-    with dfFormColumns[2]:
-        st.time_input("End Time", value=None, key="input_df_form_col3")
-        st.time_input("End Time", value=None, key="end_time_col4")
-        st.time_input("End Time", value=None, key="end_time_col5")
-        st.time_input("End Time", value=None, key="end_time_col6")
-        st.time_input("End Time", value=None, key="end_time_col7")
-        
-    with dfFormColumns[3]:
-        st.time_input("Hours Spent", value=None, key="input_df_form_col4")
-        st.time_input("Hours Spent", value=None, key="hours_col4")
-        st.time_input("Hours Spent", value=None, key="hours_col5")
-        st.time_input("Hours Spent", value=None, key="hours_col6")
-        st.time_input("Hours Spent", value=None, key="hours_col7")
-        
-    with dfFormColumns[4]:
-        st.selectbox("Category", options, key="input_df_form_col5", placeholder="Select category")
-        st.selectbox("Category", options, key="category_col5", placeholder="Select category")
-        st.selectbox("Category", options, key="category_col6", placeholder="Select category")
-        st.selectbox("Category", options, key="category_col7", placeholder="Select category")
-        st.selectbox("Category", options, key="category_col8", placeholder="Select category")
-        
-        
-    with dfFormColumns[5]:
-        st.text_input("Notes", value=None, key="input_df_form_col6",placeholder="Enter notes here.")
-        st.text_input("Notes", value=None, key="notes_col6",placeholder="Enter notes here.")
-        st.text_input("Notes", value=None, key="notes_col7",placeholder="Enter notes here.")
-        st.text_input("Notes", value=None, key="notes_col8",placeholder="Enter notes here.")
-        st.text_input("Notes", value=None, key="notes_col9",placeholder="Enter notes here.")
+    add_to_form = st.form_submit_button('Add data to table', on_click=add_dfForm)
 
-    submit_action = st.form_submit_button('Add data to table', on_click=add_dfForm)
 
-        
-    
-    
-    
-    
-   
-    
